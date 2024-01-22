@@ -1,0 +1,71 @@
+from stats import MENU, resources
+
+money_stored = 0
+water_amount = resources["water"]
+milk_amount = resources["milk"]
+coffee_amount = resources["coffee"]
+# Model answer uses dictionaries of available and required resources, and uses a for loop
+# i.e. for each item in the dic, if quantity of ingredients needed is greater than resources available
+# print statement saying there is not enough of that ingredient. This dictionary of available resources can be
+# modified within the function and resolves the problem of setting the variables to global
+end = False
+
+
+def report():
+    print(f"Water: {water_amount}ml")
+    print(f"Milk: {milk_amount}ml")
+    print(f"Coffee: {coffee_amount}g")
+    print(f"Money: ${"{:.2f}".format(money_stored)}")
+
+
+def coffee_dispenser(coffee_blend):
+    global water_amount, milk_amount, coffee_amount, money_stored, end
+    if coffee_blend == "report":
+        report()
+    elif coffee_blend == "off":
+        end = True
+        return
+    else:
+        water_needed = MENU[coffee_blend]["ingredients"]["water"]
+        milk_needed = MENU[coffee_blend]["ingredients"]["milk"]
+        coffee_needed = MENU[coffee_blend]["ingredients"]["coffee"]
+        if water_needed <= water_amount and milk_needed <= milk_amount and coffee_needed <= coffee_amount:
+            water_amount -= water_needed
+            milk_amount -= milk_needed
+            coffee_amount -= coffee_needed
+
+            money_needed = MENU[coffee_blend]["cost"]
+            print(f"The price of your drink is ${"{:.2f}".format(money_needed)}.")
+            print("Please insert coins.")
+            quarters = int(input("How many quarters (25¢)? "))
+            dimes = int(input("How many dimes (10¢)? "))
+            nickels = int(input("How many nickels (5¢)? "))
+            pennies = int(input("How many pennies (1¢)? "))
+
+            money_given = (quarters * 0.25) + (dimes * 0.10) + (nickels * 0.05) + (pennies * 0.01)
+            if money_given < money_needed:
+                print("Sorry, that's not enough money. Money refunded.")
+            else:
+                money_returned = round(money_given - money_needed)
+                money_stored += money_needed
+                return money_returned
+        else:
+            if water_needed > water_amount:
+                shortage = "water"
+            elif coffee_needed > coffee_amount:
+                shortage = "coffee"
+            elif milk_needed > milk_amount:
+                shortage = "milk"
+
+            print(f"Sorry, there is not enough {shortage}.")
+
+
+while water_amount >= 50 and coffee_amount >= 18 and end is False:
+    blend = input("What would you like? (espresso/latte/cappuccino): ").lower()
+    change = coffee_dispenser(blend)
+    if blend != "report" and change is not None:
+        print(f"Here is ${"{:.2f}".format(change)} in change.")
+        print(f"Here is your {blend}. Enjoy!")
+
+    if water_amount < 50 or coffee_amount < 18:
+        print("The machine is out of coffee ingredients. Please come back later!")
